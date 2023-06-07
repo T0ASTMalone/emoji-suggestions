@@ -1,32 +1,34 @@
-import React, { useState } from 'react'
-import { useEmojiSuggestions } from '../../hooks/useEmojiSuggestions';
+import React, { useRef, useState } from 'react'
+import EmojiSuggestions from './EmojiSuggestions';
 
-const formGroup: React.CSSProperties = {
-  display: 'flex', 
-  flexDirection: 'column', 
-  alignItems: 'start',
-  marginBottom: '10px',
-}
+import './TextInput.css';
+
+const TEXT_COLUMNS = 30;
 
 function TextInput() {
   const [value, setValue] = useState<string>('');
-  useEmojiSuggestions(value);
+  const ref = useRef<HTMLTextAreaElement>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setValue(e.target.value);
   }
 
   return (
-    <label style={formGroup}>
-      Emoji Test
-      <input
-        onChange={handleChange}
-        value={value}
-        id="emoji-input" 
-        type="text" 
-        name="emoji-input" 
-      />
-    </label>
+    <>
+      <EmojiSuggestions textAreaRef={ref} value={value} updateValue={setValue} />
+      <label className="emoji-input-group">
+        Emoji Test
+        <textarea
+          ref={ref}
+          onChange={handleChange}
+          value={value}
+          id="emoji-input" 
+          name="emoji-input" 
+          cols={TEXT_COLUMNS}
+          rows={10}
+        />
+      </label>
+    </>
   )
 }
 

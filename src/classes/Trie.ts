@@ -1,4 +1,8 @@
-const ALPHABET_LEN = 26;
+// 26 letters in alphabet +1 for underscores
+const ALPHABET_LEN = 27;
+const UNDERSCORE_CODE = 26;
+const UNDERSCORE = '_';
+const ZERO = 'a'.charCodeAt(0);
 
 type Node = {
   children: (Node | null)[];
@@ -42,7 +46,11 @@ export default class Trie {
     this.remove(this.head, item);
   }
 
-  find(partial: string): string[] {
+  find(partial: string): [string, string][] {
+    if (partial.length < 1) {
+      return [];
+    }
+
     let curr = this.head;
    
     for (let i = 0; i < partial.length; ++i) {
@@ -53,15 +61,15 @@ export default class Trie {
 
       curr = curr.children[index];
     }
-    let words = [];
+    let words: [string, string][] = [];
     // current is the last node in the prefix
     if (curr?.isEndOfWOrd && curr?.emoji) {
-      words.push(curr.emoji);
+      words.push([curr.emoji, partial]);
     }
     
     // travers down the tree collecting all letters and adding them to the 
     // prefix
-    words = words.concat(this.findWords(curr));
+    words = words.concat(this.findWords(curr, partial));
 
     return words;
   }
@@ -113,13 +121,19 @@ export default class Trie {
   }
 
   private getIndex(char: string) {
-    return char.charCodeAt(0) - 'a'.charCodeAt(0);
+    const idx = char.charCodeAt(0) - ZERO;
+
+    if (idx < 0) {
+      return UNDERSCORE_CODE;
+    }
+
+    return idx;
   }
 
 
-  private findWords(curr: Node | null) : string[] {
+  private findWords(curr: Node | null, pref: string) : [string, string][] {
     // base case
-    let out: string[] = [];
+    let out: [string, string][] = [];
 
     if (!curr) {
       return out;
@@ -129,15 +143,19 @@ export default class Trie {
     // recurse over children
     for (let i = 0; i < curr?.children.length; ++i) {
       const node = curr.children[i];
+
       if (node) {
         // pre 
-        // const char = String.fromCharCode('a'.charCodeAt(0) + i);
+        const char = i === UNDERSCORE_CODE 
+          ? UNDERSCORE 
+          : String.fromCharCode(ZERO + i);
+
         if (node.isEndOfWOrd && node.emoji) {
-          out.push(node.emoji);
+          out.push([node.emoji, `${pref}${char}`]);
         }
 
         // concat returns a copy of the array but does not mutate
-        out = out.concat(this.findWords(node));
+        out = out.concat(this.findWords(node, `${pref}${char}`));
       }
     }
 
