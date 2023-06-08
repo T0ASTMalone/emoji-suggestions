@@ -9,30 +9,33 @@ export function useRenderCount() {
   return renderCount.current;
 }
 
+function cleanString(s: string) {
+  return s.replace(/[^a-zA-Z_]/gi, '')
+}
+
 export function useEmojiSuggestions(value: string) {
   const [emojies, setEmojies] = useState<[string, string][]>([]);
-   
+
   const trie = useMemo(() => {
     const emojiTrie = new Trie();
-    console.time('setup');
+
     Object.entries(data).forEach(([k, v]) => {
       // get emoji for hexcode
       const emoji = em.find(e => e.hexcode === k);
+
       if (!emoji) {
         return;
       }
+
       // insert into trrie
       if (Array.isArray(v)) {
-        v.forEach(s => {
-          //const c = s.replace(/[^a-zA-Z]/gi, '');
-          emojiTrie.insert(s.replace(/[^a-zA-Z_]/gi, ''), emoji.unicode)
-        });
-      } else {
-        // const c = v.replace(/[^a-zA-Z]/gi, '');
-        emojiTrie.insert(v.replace(/[^a-zA-Z_]/gi, ''), emoji?.unicode)
-      }
-    })
-    console.timeEnd('setup');
+        v.forEach(s => emojiTrie.insert(cleanString(s), emoji.unicode));
+        return;
+      } 
+      
+      emojiTrie.insert(cleanString(v), emoji?.unicode)
+    });
+
     return emojiTrie;
   }, []);
 
@@ -51,6 +54,7 @@ export function useEmojiSuggestions(value: string) {
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;
+
     const debounce = (cb: () => void) => {
       if (timeout) {
         clearTimeout(timeout);
@@ -62,19 +66,13 @@ export function useEmojiSuggestions(value: string) {
     }
 
     debounce(() => {
-      const w = getWord(value);
+      const w = cleanString(getWord(value));
       // use last string as value
       if (!trie || !w) {
         setEmojies([]);
       }
 
-      const cleanWord =w.replace(/[^a-zA-Z_]/gi, '');
-
-      console.time('find')
-      const emojies = trie.find(cleanWord);
-      console.timeEnd('find')
-
-      setEmojies(emojies);
+      setEmojies(trie.find(w));
     })
 
     return () => {

@@ -3,6 +3,7 @@ const ALPHABET_LEN = 27;
 const UNDERSCORE_CODE = 26;
 const UNDERSCORE = '_';
 const ZERO = 'a'.charCodeAt(0);
+const EMPTY_CHILD = null;
 
 type Node = {
   children: (Node | null)[];
@@ -14,11 +15,12 @@ type Node = {
 
 export default class Trie {
   private head: Node | null;
+  // for middle of word searches
   private letters: Map<number, Node[]>;
 
   constructor() {
     this.head= { 
-      children: new Array(ALPHABET_LEN).fill(null),
+      children: new Array(ALPHABET_LEN).fill(EMPTY_CHILD),
       isEndOfWOrd: false,
       idx: -1,
     }
@@ -39,7 +41,7 @@ export default class Trie {
         curr = curr.children[index] as Node;
       } else {
         const node = { 
-          children: new Array(ALPHABET_LEN).fill(null), 
+          children: new Array(ALPHABET_LEN).fill(EMPTY_CHILD), 
           isEndOfWOrd: false,
           // for reverse traversal
           parent: curr,
@@ -149,7 +151,7 @@ export default class Trie {
   }
 
   private isEmpty(node: Node): boolean {
-    return node?.children?.every(c => c === null);
+    return node?.children?.every(c => c === EMPTY_CHILD);
   }
 
 
@@ -170,7 +172,7 @@ export default class Trie {
 
       // if is empty remove node
       if (this.isEmpty(node)) {
-        node = null;
+        node = EMPTY_CHILD;
       }
       
       return node;
@@ -188,7 +190,7 @@ export default class Trie {
     // if node is empty and is not the end of the word
     if (this.isEmpty(node) && !node.isEndOfWOrd) {
       // remove self
-      node = null;
+      node = EMPTY_CHILD;
     }
 
     return node;
