@@ -1,5 +1,6 @@
 import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useEmojiSuggestions } from '../../hooks/useEmojiSuggestions';
+import EmojiSuggestion from './EmojiSuggestion';
 
 type EmojiSuggestionsProps = {
   value: string;
@@ -120,41 +121,17 @@ function EmojiSuggestions({ value, updateValue, textAreaRef: ref}: EmojiSuggesti
     setSelected([suggestions[0], 0]);
   }, [suggestions, suggestions?.length])
 
-  // TODO: search from the middle of the word
-  //
-  // Each node in the trie is technically still a trie. You can treat it as the 
-  // root of that subtree. You can exploit this by keeping a hash table that 
-  // maps values of each node to the corresponding nodes in the trie. If nodes 
-  // can have duplicate values then make each value map to a list of nodes.
-
-  // If you need to search for a value in the middle of the trie you can use 
-  // the hash table to immediately jump to the nodes in the trie that start 
-  // with your starting value. Then for each of those nodes you can search for 
-  // your value as if that node was the root of a top level trie somewhere.
-  //
-  // https://stackoverflow.com/questions/54561737/how-to-search-tries-from-the-middle
-  //
-  // ME: 
-  // Every time you insert a node you add it to the list of nodes in the 
-  // hashmap { 'l': [node, node, node] }
-
   return (
     <div className='emoji-container'>
       <ul ref={listRef} className='emoji-list'>
         {suggestions?.map(([emoji, name]) => (
-          // list like github or grid with emoji name in header for hovered emoji
-          <li className='emoji-list-item' key={name}>
-            <button
-              value={emoji}
-              className={`emoji-btn ${selected?.[0]?.[1] === name ? 'active' : ''}`}
-              type="button"
-              onClick={handleClick}
-            >
-              {emoji}
-              {' '}
-              :{name}:
-            </button>
-          </li>
+          <EmojiSuggestion 
+            key={name}
+            selected={selected?.[0]?.[1] === name }
+            emoji={emoji}
+            name={name}
+            handleClick={handleClick}
+          />
         ))}
       </ul>
     </div>

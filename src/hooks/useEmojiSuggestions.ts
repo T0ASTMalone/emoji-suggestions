@@ -11,7 +11,7 @@ export function useRenderCount() {
 
 export function useEmojiSuggestions(value: string) {
   const [emojies, setEmojies] = useState<[string, string][]>([]);
-
+   
   const trie = useMemo(() => {
     const emojiTrie = new Trie();
     console.time('setup');
@@ -50,7 +50,7 @@ export function useEmojiSuggestions(value: string) {
   }
 
   useEffect(() => {
-    let timeout: number;
+    let timeout: NodeJS.Timeout;
     const debounce = (cb: () => void) => {
       if (timeout) {
         clearTimeout(timeout);
@@ -58,7 +58,7 @@ export function useEmojiSuggestions(value: string) {
 
       timeout = setTimeout(() => {
         cb();
-      }, 100);
+      }, 300);
     }
 
     debounce(() => {
@@ -68,9 +68,10 @@ export function useEmojiSuggestions(value: string) {
         setEmojies([]);
       }
 
-      console.log('value: ', w.replace(/[^a-zA-Z_]/gi, ''));
+      const cleanWord =w.replace(/[^a-zA-Z_]/gi, '');
+
       console.time('find')
-      const emojies = trie.find(w.replace(/[^a-zA-Z_]/gi, ''));
+      const emojies = trie.find(cleanWord);
       console.timeEnd('find')
 
       setEmojies(emojies);
