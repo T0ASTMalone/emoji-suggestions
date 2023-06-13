@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
 import Trie from "../classes/Trie";
 import data from 'emojibase-data/en/shortcodes/emojibase.json';
 import em from 'emojibase-data/en/compact.json';
+
+const EMOJI_SHORT_CODE = /[^a-zA-Z_]/gi;
 
 export function useRenderCount() {
   const renderCount = useRef(0);
@@ -10,10 +12,10 @@ export function useRenderCount() {
 }
 
 function cleanString(s: string) {
-  return s.replace(/[^a-zA-Z_]/gi, '')
+  return s.replace(EMOJI_SHORT_CODE, '')
 }
 
-export function useEmojiSuggestions(value: string) {
+export function useEmojiSuggestions(value: string, inputRef: RefObject<HTMLTextAreaElement | HTMLInputElement>) {
   const [emojies, setEmojies] = useState<[string, string][]>([]);
 
   const trie = useMemo(() => {
@@ -40,10 +42,16 @@ export function useEmojiSuggestions(value: string) {
   }, []);
 
   function getWord(value: string) {
-    // split string by space
-    const words = value.split(' ');
-    // get last word
-    const w = words[words.length - 1];
+    if (!inputRef?.current?.selectionStart) {
+      return '';
+    }
+
+    // split at selctionStart
+    const spaceSplit = value
+      .substring(0, inputRef.current.selectionStart)
+      .split(' ')
+
+    const w = spaceSplit[spaceSplit.length - 1];
 
     if (w.charAt(0) !== ':') {
       return '';

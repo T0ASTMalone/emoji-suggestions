@@ -1,10 +1,11 @@
 import React, { RefObject, useCallback, useEffect, useRef, useState } from 'react'
-import { useEmojiSuggestions } from '../../hooks/useEmojiSuggestions';
 import EmojiSuggestion from './EmojiSuggestion';
+
+import { useEmojiSuggestions } from '../../hooks/useEmojiSuggestions';
 
 type EmojiSuggestionsProps = {
   value: string;
-  textAreaRef: RefObject<HTMLTextAreaElement>;
+  inputRef: RefObject<HTMLTextAreaElement | HTMLInputElement>;
   updateValue: (newValue: string) => void;
 }
 
@@ -13,41 +14,57 @@ enum Action {
   DOWN = -1,
 }
 
-function EmojiSuggestions({ value, updateValue, textAreaRef: ref}: EmojiSuggestionsProps) {
-  const listRef = useRef<HTMLUListElement>(null);
-  const [selected, setSelected] = useState<[[string, string], number] | null>();
-  const suggestions = useEmojiSuggestions(value);
+function isLastWordShortCode(arr: string[]) {
+  return arr[arr.length - 1].charAt(0) !== ':'
+}
 
-  function scrollIntoView(block: ScrollLogicalPosition) {
-    const el = listRef.current?.querySelector('.emoji-btn.active');
-    if (el) {
-      el?.scrollIntoView({ block });
-    }
-  }
+function EmojiSuggestions({ value, updateValue, inputRef }: EmojiSuggestionsProps) {
+  const listRef = useRef<HTMLUListElement>(null);
+  const updatedAt = useRef<number>(-1);
+  const [selected, setSelected] = useState<[[string, string], number] | null>();
+
+  const suggestions = useEmojiSuggestions(value, inputRef);
 
   const updateText = useCallback((unicode: string): void => {
-    const newValue = value.split(' ');
-
-    if (newValue[newValue.length - 1].charAt(0) !== ':') {
+    // split string at cursor
+    if (!inputRef?.current?.selectionStart) {
       return;
     }
 
-    // remove last word 
-    newValue.pop();
+    const beforeCursor = value
+      .substring(0, inputRef.current.selectionStart)
+      .split(' ');
+    const postCursor = value.substring(inputRef.current.selectionStart);
 
-    // add unicode to arr 
-    newValue.push(unicode);
+    // if last word is short code
+    if (isLastWordShortCode(beforeCursor)) {
+      return;
+    }
 
-    // update value
-    updateValue(newValue.join(' '));
+    // replace shortcode with unicode 
+    beforeCursor.pop();
+    beforeCursor.push(unicode);
+    const newBeforeCursor = beforeCursor.join(' ');
+    updateValue(newBeforeCursor + postCursor);
 
     // clear selected 
     setSelected(null);
 
-    // focus back on the text input
-    ref.current?.setSelectionRange(newValue.length, newValue.length);
-    ref.current?.focus();
-  }, [value, updateValue, ref]);
+    // indicator to update set slection range
+    updatedAt.current = newBeforeCursor.length;
+  }, [value, updateValue, inputRef]);
+
+  useEffect(() => {
+    // check indicator here 
+    if (updatedAt.current < 0 || !inputRef.current) {
+      return;
+    }
+
+    inputRef?.current?.setSelectionRange(updatedAt.current, updatedAt.current);
+    inputRef?.current?.focus();
+
+    updatedAt.current = -1;
+  }, [value, inputRef])
 
   const handleEnter = useCallback(() => {
     if (!selected?.length) {
@@ -74,12 +91,14 @@ function EmojiSuggestions({ value, updateValue, textAreaRef: ref}: EmojiSuggesti
     }
 
     setSelected([...[suggestions[next], next] as [[string, string], number]]);
-    scrollIntoView(scroll);
+
+    listRef.current
+      ?.querySelector('.emoji-btn.active')
+      ?.scrollIntoView({ block: scroll });
   }, [selected, suggestions])
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const unicode = (e.target as HTMLButtonElement).value;
-    updateText(unicode);
+    updateText((e.target as HTMLButtonElement).value);
     setSelected(null);
   }
 
@@ -119,7 +138,7 @@ function EmojiSuggestions({ value, updateValue, textAreaRef: ref}: EmojiSuggesti
   useEffect(() => {
     // when sugestions change update selected 
     setSelected([suggestions[0], 0]);
-  }, [suggestions, suggestions?.length])
+  }, [suggestions, suggestions?.length]);
 
   return (
     <div className='emoji-container'>
