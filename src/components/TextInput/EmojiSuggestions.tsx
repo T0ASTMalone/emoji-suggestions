@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'; 
 import type { Input } from '../../types/emoji-types';
 import EmojiSuggestion from './EmojiSuggestion';

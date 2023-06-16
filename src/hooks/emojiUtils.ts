@@ -113,7 +113,7 @@ export function useKeyboardControls(
     };
   }, [handleKeyDown]);
 
-  const setSelectedCallback = (val: Suggestion) => {
+  const setSelectedCallback = (val: Suggestion | null) => {
     if (!val) {
       idxRef.current = -1;
     }
