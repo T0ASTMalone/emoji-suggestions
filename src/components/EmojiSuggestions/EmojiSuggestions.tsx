@@ -7,7 +7,7 @@ import { useEmojiSuggestions } from '../../hooks/useEmojiSuggestions';
 import { useClickOutside } from '../../hooks/utils';
 import { useKeyboardControls, useUpdateText } from '../../hooks/emojiUtils';
 
-type EmojiSuggestionsProps = {
+export type EmojiSuggestionsProps = {
   value: string;
   inputRef: RefObject<Input>;
   updateValue: (newValue: string) => void;
