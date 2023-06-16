@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import type { RefObject } from 'react'; 
 import type { Input } from '../../types/emoji-types';
-import EmojiSuggestion from './EmojiSuggestion';
+import { EmojiSuggestion } from '../EmojiSuggestion';
 
 import { useEmojiSuggestions } from '../../hooks/useEmojiSuggestions';
 import { useClickOutside } from '../../hooks/utils';
 import { useKeyboardControls, useUpdateText } from '../../hooks/emojiUtils';
+
+import './EmojiSuggestions.css';
 
 export type EmojiSuggestionsProps = {
   value: string;
