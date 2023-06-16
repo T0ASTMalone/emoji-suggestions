@@ -1,22 +1,22 @@
-import { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import type { RefObject } from 'react';
+import { Input, ShortCode, Suggestion } from "../types/emoji-types";
+
 import Trie from "../classes/Trie";
+import { useDebounce } from "./utils";
+
 import data from 'emojibase-data/en/shortcodes/emojibase.json';
 import em from 'emojibase-data/en/compact.json';
 
 const EMOJI_SHORT_CODE = /[^a-zA-Z_]/gi;
 
-export function useRenderCount() {
-  const renderCount = useRef(0);
-  renderCount.current += 1;
-  return renderCount.current;
-}
-
-function cleanString(s: string) {
+function cleanString(s: string): ShortCode {
   return s.replace(EMOJI_SHORT_CODE, '')
 }
 
-export function useEmojiSuggestions(value: string, inputRef: RefObject<HTMLTextAreaElement | HTMLInputElement>) {
-  const [emojies, setEmojies] = useState<[string, string][]>([]);
+export function useEmojiSuggestions(value: string, inputRef: RefObject<Input>) 
+: [Suggestion[], () => void]{
+  const [emojies, setEmojies] = useState<Suggestion[]>([]);
 
   const trie = useMemo(() => {
     const emojiTrie = new Trie();
@@ -41,54 +41,49 @@ export function useEmojiSuggestions(value: string, inputRef: RefObject<HTMLTextA
     return emojiTrie;
   }, []);
 
-  function getWord(value: string) {
+  const getWord = useCallback((value: string) => {
     if (!inputRef?.current?.selectionStart) {
       return '';
     }
 
     // split at selctionStart
-    const spaceSplit = value
+    const splitString = value
       .substring(0, inputRef.current.selectionStart)
-      .split(' ')
+      .split(' ');
 
-    const w = spaceSplit[spaceSplit.length - 1];
+    const w = splitString[splitString.length - 1];
 
     if (w.charAt(0) !== ':') {
       return '';
     }
 
     return w;
-  }
+  }, [inputRef]);
 
-  useEffect(() => {
-    let timeout: NodeJS.Timeout;
-
-    const debounce = (cb: () => void) => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-
-      timeout = setTimeout(() => {
-        cb();
-      }, 300);
+  useDebounce(() => {
+    if (!value) {
+      return;
     }
 
-    debounce(() => {
-      const w = cleanString(getWord(value));
-      // use last string as value
-      if (!trie || !w) {
-        setEmojies([]);
-      }
+    const w = cleanString(getWord(value));
 
-      setEmojies(trie.find(w));
-    })
-
-    return () => {
-      clearTimeout(timeout);
+    if ((!w || w.length < 2)) {
+      return;
     }
-  }, [value, trie]);
+
+    // use last string as value
+    if (!trie || !w) {
+      setEmojies([]);
+    }
+
+    setEmojies(trie.find(w));
+  }, [value, getWord, trie], 200);
+
+  const clear = useCallback(() => {
+    setEmojies([]);
+  }, [])
   
-  return emojies;
+  return [emojies, clear];
 }
 
 

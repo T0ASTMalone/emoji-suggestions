@@ -1,9 +1,10 @@
 import React from 'react'
+import type { Emoji, ShortCode } from '../../types/emoji-types';
 
 type EmojiSuggestionProps  = {
-  name: string;
+  name: ShortCode;
   selected: boolean;
-  emoji: string;
+  emoji: Emoji;
   handleClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 

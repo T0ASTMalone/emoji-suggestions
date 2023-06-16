@@ -12,12 +12,6 @@ function TextInput() {
     setValue(e.target.value);
   }
 
-  const [val, setVal] = useState<string>('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setVal(e.target.value);
-  }
-
   return (
     <>
       <EmojiSuggestions inputRef={ref} value={value} updateValue={setValue} />
@@ -31,18 +25,6 @@ function TextInput() {
           name="emoji-input" 
           cols={TEXT_COLUMNS}
           rows={10}
-        />
-      </label>
-      <EmojiSuggestions inputRef={inputRef} value={val} updateValue={setVal} />
-      <label className="emoji-input-group" htmlFor="">
-        Emoji Test Input
-        <input 
-          id="emoji-input" 
-          type="text" 
-          name="emoji-input" 
-          ref={inputRef} 
-          value={val}
-          onChange={handleChangeInput}
         />
       </label>
     </>

@@ -25,11 +25,8 @@ describe('Trie Tree', () => {
     const actual2 = trie.find('ball');
     expect(actual2).toEqual(expected2);
 
-
     const expected3 = [['🩰', 'ballet_shoes']];
     const actual3 = trie.find('sho');
-    console.log(actual3);
-    console.log(expected3);
     expect(actual3).toEqual(expected3);
 
   });
