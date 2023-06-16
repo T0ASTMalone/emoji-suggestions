@@ -4,7 +4,7 @@
     "registry": "https://npm.pkg.github.com/T0ASTMalone"
   },
   "private": false,
-  "version": "0.0.4",
+  "version": "0.0.41",
   "type": "module",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

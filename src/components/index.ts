@@ -1,1 +1,1 @@
-export * from './EmojiSuggestions';
+export { default as EmojiSuggestions } from './EmojiSuggestions';
